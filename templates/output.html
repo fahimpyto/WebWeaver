@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ domain }} — Site Map</title>
+<style>
+:root{--bg:#f0f2f5;--dot:#e1e4e8;--line:#cbd5e1;--text:#1e293b;--text2:#64748b;--card:#fff;--accent:#3b82f6;--s200:#10b981;--s300:#f59e0b;--s400:#ef4444;--s500:#8b5cf6;--shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);--hdr:56px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;display:flex;flex-direction:column}
+header{height:var(--hdr);background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:10;box-shadow:0 2px 4px rgba(0,0,0,.05);flex-shrink:0}
+.brand{font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.brand svg{width:20px;height:20px}
+.brand span{color:var(--accent)}
+.h-right{display:flex;align-items:center;gap:10px}
+.stats{display:flex;gap:5px;font-size:.72rem}
+.st{background:var(--bg);padding:3px 8px;border-radius:4px;font-weight:600;border:1px solid var(--line)}
+.st-ok{background:#d1fae5;color:#065f46}
+.st-err{background:#fee2e2;color:#991b1b}
+.ctrls{display:flex;gap:6px}
+.btn{background:var(--card);border:1px solid var(--line);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:.78rem;transition:all .15s;display:flex;align-items:center;gap:4px;color:var(--text)}
+.btn:hover{background:var(--bg);border-color:var(--accent);color:var(--accent)}
+
+#vp{flex:1;position:relative;overflow:hidden;cursor:grab;background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:20px 20px}
+#vp:active{cursor:grabbing}
+#world{position:absolute;top:0;left:0;transform-origin:0 0}
+svg.cn{position:absolute;top:0;left:0;width:50000px;height:50000px;pointer-events:none;z-index:1}
+path.cx{fill:none;stroke:var(--line);stroke-width:1.5px}
+
+.node{position:absolute;width:180px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);padding:10px 12px;z-index:2;border:1px solid transparent;transition:box-shadow .15s,transform .15s;cursor:pointer;font-size:.82rem}
+.node:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border-color:var(--accent);z-index:10}
+.node.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.25)}
+.n-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.n-title{font-weight:600;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.n-url{font-size:.7rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.n-meta{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--text2)}
+.tg{width:18px;height:18px;border-radius:50%;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;cursor:pointer;color:var(--text2);flex-shrink:0}
+.tg:hover{background:var(--line);color:var(--text)}
+.badge{padding:2px 5px;border-radius:3px;font-weight:600;font-size:.65rem;flex-shrink:0}
+.b200{background:#d1fae5;color:#065f46}
+.b301,.b302{background:#fef3c7;color:#92400e}
+.b404,.b410{background:#fee2e2;color:#991b1b}
+.b500{background:#ede9fe;color:#5b21b6}
+.b0{background:#f1f5f9;color:#64748b}
+
+.seo-stats{display:flex;gap:6px;margin-top:6px;font-size:.65rem;color:var(--text2)}
+.seo-item{display:flex;align-items:center;gap:2px}
+.seo-icon{width:10px;height:10px}
+
+.legend{position:absolute;bottom:16px;left:16px;background:rgba(255,255,255,.92);padding:8px 12px;border-radius:6px;border:1px solid var(--line);display:flex;gap:12px;font-size:.7rem;pointer-events:none;z-index:5}
+.l-item{display:flex;align-items:center;gap:4px}
+.ld{width:7px;height:7px;border-radius:50%}
+
+#panel{position:absolute;top:var(--hdr);right:0;width:320px;height:calc(100vh - var(--hdr));background:var(--card);border-left:1px solid var(--line);box-shadow:-2px 0 10px rgba(0,0,0,.05);transform:translateX(100%);transition:transform .25s ease;padding:18px;z-index:20;overflow-y:auto}
+#panel.active{transform:translateX(0)}
+.p-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--bg)}
+.p-hdr h2{font-size:.9rem}
+.p-body h3{font-size:.9rem;margin-bottom:4px;word-break:break-all}
+.p-body p{font-size:.8rem;color:var(--text2);margin-bottom:12px}
+.dr{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px;border-bottom:1px dashed var(--bg);padding-bottom:3px}
+.dl{color:var(--text2)}
+.dv{font-weight:500;text-align:right}
+.p-body hr{margin:12px 0;border:0;border-top:1px solid #eee}
+.p-body h4{font-size:.72rem;text-transform:uppercase;color:#888;margin-bottom:6px}
+.seo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.seo-box{background:var(--bg);padding:8px;border-radius:4px}
+.seo-box-label{font-size:.6rem;color:var(--text2);text-transform:uppercase}
+.seo-box-value{font-size:.85rem;font-weight:600}
+
+@media(max-width:640px){
+  .h-right{gap:4px}
+  .stats{display:none}
+  .node{width:150px;padding:8px}
+  .n-title{max-width:80px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+    Crawl<span>Map</span>
+  </div>
+  <div class="h-right">
+    <div class="stats">
+      <span class="st">{{ total_pages }} pages</span>
+      <span class="st st-ok">{{ ok_count }} ok</span>
+      {%- if err_count %}<span class="st st-err">{{ err_count }} failed</span>{% endif %}
+      <span class="st">{{ total_time }}s</span>
+      <span class="st">{{ avg_load_time }}ms avg</span>
+    </div>
+    <div class="ctrls">
+      <button class="btn" onclick="app.resetView()">&#x21BA;</button>
+      <button class="btn" onclick="app.expandAll()">+ all</button>
+      <button class="btn" onclick="app.collapseAll()">&minus; all</button>
+    </div>
+  </div>
+</header>
+
+<div id="vp">
+  <div id="world">
+    <svg class="cn" id="svg"></svg>
+    <div id="nc"></div>
+  </div>
+  <div class="legend">
+    <div class="l-item"><div class="ld" style="background:var(--s200)"></div> 200</div>
+    <div class="l-item"><div class="ld" style="background:var(--s300)"></div> 3xx</div>
+    <div class="l-item"><div class="ld" style="background:var(--s400)"></div> 4xx</div>
+    <div class="l-item"><div class="ld" style="background:var(--s500)"></div> 5xx</div>
+  </div>
+</div>
+
+<aside id="panel">
+  <div class="p-hdr">
+    <h2>Page Details</h2>
+    <button class="btn" style="border:none" onclick="app.closePanel()">&#x2715;</button>
+  </div>
+  <div class="p-body" id="pb">
+    <p style="text-align:center;margin-top:40px;color:var(--text2)">Select a node to view details.</p>
+  </div>
+</aside>
+
+<script>
+var TREE = {{ tree | tojson }};
+
+const app = {
+  data: null, scale: 1, panX: 0, panY: 0,
+  panning: false, sx: 0, sy: 0,
+  nodeW: 180, nodeH: 70, hGap: 80, vGap: 20,
+  world: document.getElementById('world'),
+  nc: document.getElementById('nc'),
+  svg: document.getElementById('svg'),
+  panel: document.getElementById('panel'),
+  pb: document.getElementById('pb'),
+
+  init(data) {
+    this.data = this.prepare(data, 0);
+    this.setupEvents();
+    this.render();
+    this.centerTree();
+  },
+
+  prepare(node, idx) {
+    if (!node.id) node.id = 'n' + idx;
+    node.collapsed = true;
+    node._idx = idx;
+    if (node.children) {
+      node.children.forEach((c, i) => this.prepare(c, idx + '-' + i));
+    }
+    return node;
+  },
+
+  statusFromNode(n) {
+    if (n.crawled && n.status) return n.status;
+    if (!n.error) return 0;
+    var m = n.error.match(/HTTP (\d+)/);
+    if (m) return parseInt(m[1]);
+    if (n.error.indexOf('timeout') !== -1) return 500;
+    if (n.error.indexOf('connection') !== -1) return 500;
+    return 0;
+  },
+
+  calcLayout(node, level) {
+    if (node.collapsed || !node.children || !node.children.length) {
+      node._w = this.nodeH;
+      node._tw = this.nodeH;
+      return this.nodeH;
+    }
+    var ch = 0;
+    node.children.forEach((c, i) => {
+      ch += this.calcLayout(c, level + 1);
+      if (i < node.children.length - 1) ch += this.vGap;
+    });
+    node._tw = Math.max(this.nodeH, ch);
+    return node._tw;
+  },
+
+  assignCoords(node, x, y) {
+    node._x = x;
+    node._y = y + (node._tw / 2) - (this.nodeH / 2);
+    if (!node.collapsed && node.children && node.children.length) {
+      var cy = y + (node._tw / 2) - (this._childrenH(node) / 2);
+      node.children.forEach(c => {
+        this.assignCoords(c, x + this.nodeW + this.hGap, cy);
+        cy += c._tw + this.vGap;
+      });
+    }
+  },
+
+  _childrenH(node) {
+    if (!node.children || !node.children.length) return 0;
+    var h = 0;
+    node.children.forEach((c, i) => {
+      h += c._tw;
+      if (i < node.children.length - 1) h += this.vGap;
+    });
+    return h;
+  },
+
+  render() {
+    this.calcLayout(this.data, 0);
+    this.assignCoords(this.data, 40, 40);
+    this.nc.innerHTML = '';
+    this.svg.innerHTML = '';
+    this.drawNode(this.data);
+  },
+
+  drawNode(node) {
+    var el = document.createElement('div');
+    el.className = 'node';
+    el.style.left = node._x + 'px';
+    el.style.top = node._y + 'px';
+    el.dataset.id = node.id;
+
+    var hasChild = node.children && node.children.length > 0;
+    var st = this.statusFromNode(node);
+    var badgeCls = 'b' + st;
+    if (st >= 300 && st < 400) badgeCls = 'b301';
+    else if (st >= 400 && st < 500) badgeCls = 'b404';
+    else if (st >= 500) badgeCls = 'b500';
+
+    var seoHtml = '';
+    if (node.load_time) {
+      seoHtml = '<div class="seo-stats">' +
+        '<span class="seo-item">' + Math.round(node.load_time) + 'ms</span>' +
+        '<span class="seo-item">' + (node.page_size || 0) + 'KB</span>';
+      if (node.seo && node.seo.title) {
+        seoHtml += '<span class="seo-item">SEO</span>';
+      }
+      seoHtml += '</div>';
+    }
+
+    el.innerHTML =
+      '<div class="n-hdr">' +
+        '<span class="badge ' + badgeCls + '">' + st + '</span>' +
+        (hasChild ? '<div class="tg">' + (node.collapsed ? '+' : '−') + '</div>' : '<div style="width:18px"></div>') +
+      '</div>' +
+      '<div class="n-title" title="' + this.esc(node.title) + '">' + this.esc(node.title) + '</div>' +
+      '<div class="n-url">' + this.esc(node.url || node.path) + '</div>' +
+      seoHtml;
+
+    el.onclick = (e) => {
+      if (e.target.classList.contains('tg')) return;
+      this.showDetail(node);
+    };
+
+    var tg = el.querySelector('.tg');
+    if (tg) {
+      tg.onclick = (e) => {
+        e.stopPropagation();
+        this.toggleNode(node.id);
+      };
+    }
+
+    this.nc.appendChild(el);
+
+    if (!node.collapsed && node.children) {
+      node.children.forEach(c => {
+        this.drawConnector(node, c);
+        this.drawNode(c);
+      });
+    }
+  },
+
+  drawConnector(p, c) {
+    var x1 = p._x + this.nodeW;
+    var y1 = p._y + this.nodeH / 2;
+    var x2 = c._x;
+    var y2 = c._y + this.nodeH / 2;
+    var cx = x1 + (this.hGap / 2);
+    var d = 'M ' + x1 + ' ' + y1 + ' C ' + cx + ' ' + y1 + ', ' + cx + ' ' + y2 + ', ' + x2 + ' ' + y2;
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'cx');
+    this.svg.appendChild(path);
+  },
+
+  esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+
+  toggleNode(id) {
+    var found = this._find(id, this.data);
+    if (found) {
+      found.collapsed = !found.collapsed;
+      this.render();
+    }
+  },
+
+  expandAll() {
+    this._setCollapse(this.data, false);
+    this.render();
+  },
+
+  collapseAll() {
+    if (this.data) this.data.collapsed = true;
+    this._setCollapse(this.data, true);
+    this.render();
+  },
+
+  _setCollapse(node, val) {
+    if (node && node.children) {
+      node.collapsed = val;
+      node.children.forEach(c => this._setCollapse(c, val));
+    }
+  },
+
+  _find(id, node) {
+    if (node.id === id) return node;
+    if (node.children) {
+      for (var c of node.children) {
+        var f = this._find(id, c);
+        if (f) return f;
+      }
+    }
+    return null;
+  },
+
+  showDetail(node) {
+    this.panel.classList.add('active');
+    var st = this.statusFromNode(node);
+    var badgeCls = 'b' + st;
+    if (st >= 300 && st < 400) badgeCls = 'b301';
+    else if (st >= 400 && st < 500) badgeCls = 'b404';
+    else if (st >= 500) badgeCls = 'b500';
+    var statusLabel = st === 200 ? 'OK' : (node.error || 'unknown');
+
+    var seoHtml = '';
+    if (node.seo) {
+      seoHtml = '<h4>SEO Data</h4><div class="seo-grid">' +
+        '<div class="seo-box"><div class="seo-box-label">Title</div><div class="seo-box-value">' + this.esc(node.seo.title || '-') + '</div></div>' +
+        '<div class="seo-box"><div class="seo-box-label">Meta Desc</div><div class="seo-box-value">' + this.esc((node.seo.meta_desc || '-').substring(0, 30)) + '</div></div>' +
+        '<div class="seo-box"><div class="seo-box-label">H1 Count</div><div class="seo-box-value">' + (node.seo.h1_count || 0) + '</div></div>' +
+        '<div class="seo-box"><div class="seo-box-label">H2 Count</div><div class="seo-box-value">' + (node.seo.h2_count || 0) + '</div></div>' +
+        '<div class="seo-box"><div class="seo-box-label">Images</div><div class="seo-box-value">' + (node.seo.images || 0) + '</div></div>' +
+        '<div class="seo-box"><div class="seo-box-label">Internal Links</div><div class="seo-box-value">' + (node.seo.internal_links || 0) + '</div></div>' +
+        '</div>';
+    }
+
+    this.pb.innerHTML =
+      '<div class="dr"><span class="dl">URL</span><span class="dv" style="font-size:.78rem">' + this.esc(node.url || node.path) + '</span></div>' +
+      '<div class="dr"><span class="dl">Status</span><span class="badge ' + badgeCls + '">' + st + ' ' + statusLabel + '</span></div>' +
+      '<div class="dr"><span class="dl">Title</span><span class="dv">' + this.esc(node.title) + '</span></div>' +
+      '<div class="dr"><span class="dl">Path</span><span class="dv">' + this.esc(node.path || '/') + '</span></div>' +
+      '<div class="dr"><span class="dl">Depth</span><span class="dv">' + (node.depth || 0) + '</span></div>' +
+      '<div class="dr"><span class="dl">Load Time</span><span class="dv">' + (node.load_time ? Math.round(node.load_time) + 'ms' : '-') + '</span></div>' +
+      '<div class="dr"><span class="dl">Page Size</span><span class="dv">' + (node.page_size ? node.page_size + 'KB' : '-') + '</span></div>' +
+      '<hr>' +
+      '<h4>Links</h4>' +
+      '<div class="dr"><span class="dl">Children</span><span class="dv">' + (node.children ? node.children.length : 0) + '</span></div>' +
+      seoHtml;
+  },
+
+  closePanel() {
+    this.panel.classList.remove('active');
+  },
+
+  setupEvents() {
+    var vp = document.getElementById('vp');
+    vp.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.node') || e.target.closest('.btn')) return;
+      this.panning = true;
+      this.sx = e.clientX - this.panX;
+      this.sy = e.clientY - this.panY;
+      vp.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!this.panning) return;
+      e.preventDefault();
+      this.panX = e.clientX - this.sx;
+      this.panY = e.clientY - this.sy;
+      this.updateTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      this.panning = false;
+      vp.style.cursor = 'grab';
+    });
+    vp.addEventListener('mouseleave', () => {
+      this.panning = false;
+      vp.style.cursor = 'grab';
+    });
+    vp.addEventListener('mouseenter', () => {
+      vp.style.cursor = 'grab';
+    });
+    vp.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      var xs = (e.clientX - this.panX) / this.scale;
+      var ys = (e.clientY - this.panY) / this.scale;
+      var delta = -e.deltaY;
+      delta > 0 ? (this.scale *= 1.1) : (this.scale /= 1.1);
+      this.scale = Math.min(Math.max(0.1, 5), this.scale);
+      this.panX = e.clientX - xs * this.scale;
+      this.panY = e.clientY - ys * this.scale;
+      this.updateTransform();
+    }, {passive: false});
+  },
+
+  updateTransform() {
+    this.world.style.transform = 'translate(' + this.panX + 'px,' + this.panY + 'px) scale(' + this.scale + ')';
+  },
+
+  resetView() {
+    this.scale = 1;
+    this.centerTree();
+  },
+
+  centerTree() {
+    this.render();
+    var vp = document.getElementById('vp');
+    if (!this.data) return;
+    var cy = this.data._y + this.nodeH / 2;
+    this.panX = 30;
+    this.panY = (vp.clientHeight / 2) - cy;
+    this.updateTransform();
+  }
+};
+
+window.onload = function() { app.init(TREE); };
+</script>
+</body>
+</html>
